@@ -1,0 +1,9 @@
+.DS_Store
+node_modules
+*.tsbuildinfo
+
+/build
+.env
+
+# generated files
+.react-router/

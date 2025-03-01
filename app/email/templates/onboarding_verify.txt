@@ -1,0 +1,10 @@
+Hi there,
+
+Here is your verification code:
+{{otp}}
+
+or click this link:
+{{verifyUrl}}
+
+Best,
+{{platformName}} Team

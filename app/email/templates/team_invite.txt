@@ -1,0 +1,11 @@
+Hi there,
+
+We're writing to let you know that you have been invited to join {{team}} on
+{{productName}}.
+
+Use the link below to accept the invite:
+
+{{invite}}
+
+Best,
+{{productName}} Team

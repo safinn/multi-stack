@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "~/*": ["./app/*"]
+    },
+    "checkJs": true,
+    "strict": true,
+    "noEmit": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true
+  },
+  "references": [
+    { "path": "./tsconfig.node.json" },
+    { "path": "./tsconfig.vite.json" }
+  ],
+  "files": []
+}

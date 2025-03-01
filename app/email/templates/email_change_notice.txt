@@ -1,0 +1,11 @@
+YOUR {{productName}} EMAIL HAS BEEN CHANGED
+
+We're writing to let you know that your {{productName}} email has been changed.
+
+If you changed your email address, then you can safely ignore this. But if you
+did not change your email address, then please contact support immediately.
+
+Your Account ID: {{userId}}
+
+Best,
+{{productName}} Team
