@@ -68,7 +68,7 @@ export class MembershipRepository implements IMembershipRepository<Selectable<Me
     return this.db
       .selectFrom('membership')
       .where('membership.userId', '=', userId)
-      .where('membership.roles', '@>', ['super'])
+      .where('membership.roles', '@>', [['super']])
       .selectAll()
       .executeTakeFirst()
   }
