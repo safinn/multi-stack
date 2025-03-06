@@ -13,8 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '~
 import { StatusButton } from '~/components/ui/status-button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '~/components/ui/table'
 import { db } from '~/data/db'
+import { repositoryFactory } from '~/data/factory'
 import { IdentityRespository } from '~/data/repositories/identity'
-import { MembershipRepository } from '~/data/repositories/membership'
 import { RoleRepository } from '~/data/repositories/role'
 import { emailer } from '~/email/emailer'
 import { requireUserInOrganization } from '~/utils/auth/auth.server'
@@ -80,7 +80,7 @@ export async function action({ request, params }: Route.ActionArgs) {
     case 'invite': {
       const email = submission.value.email
       await requireUserWithOrganizationPermission(request, organiastion.shortId, 'create:user:any')
-      const membershipsWithUsers = await new IdentityRespository(db).findMembershipsByOrganizationWithUsers(organiastion.id)
+      const membershipsWithUsers = await repositoryFactory.getIdentityRepository().findMembershipsByOrganizationWithUsers(organiastion.id)
       const existingMember = membershipsWithUsers.find(member =>
         member.user?.email === email
         || member.inviteEmail === email)
@@ -89,7 +89,7 @@ export async function action({ request, params }: Route.ActionArgs) {
       }
 
       const invitationId = uuidv7()
-      const membership = await new MembershipRepository(db).create({
+      const membership = await repositoryFactory.getMembershipRepository().create({
         id: uuidv7(),
         organizationId: organiastion.id,
         invitationId,
@@ -115,7 +115,7 @@ export async function action({ request, params }: Route.ActionArgs) {
     case 'remove': {
       await requireUserWithOrganizationPermission(request, organiastion.shortId, 'delete:user:any')
       const removeMemberId = submission.value.memberId
-      const members = await new IdentityRespository(db).findMembershipsByOrganizationWithUsers(organiastion.id)
+      const members = await repositoryFactory.getIdentityRepository().findMembershipsByOrganizationWithUsers(organiastion.id)
 
       const member = members.find(member => member.id === removeMemberId)
       const isPersonalOrganization = organiastion.personalOrganizationUserId === removeMemberId
@@ -129,7 +129,7 @@ export async function action({ request, params }: Route.ActionArgs) {
         return data(submission.reply({ formErrors: ['Cannot remove member'] }), { status: 400 })
       }
 
-      await new MembershipRepository(db).delete(removeMemberId)
+      await repositoryFactory.getMembershipRepository().delete(removeMemberId)
 
       if (member.userId === user.id) {
         return redirect(href('/app/:organizationId?'))
@@ -139,7 +139,7 @@ export async function action({ request, params }: Route.ActionArgs) {
     }
     case 'update-role': {
       await requireUserWithOrganizationPermission(request, organiastion.shortId, 'update:user:any')
-      await new MembershipRepository(db).patch(submission.value.memberId, {
+      await repositoryFactory.getMembershipRepository().patch(submission.value.memberId, {
         roles: [submission.value.role],
       })
 

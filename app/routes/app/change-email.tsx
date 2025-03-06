@@ -6,8 +6,7 @@ import { data, Form, href, redirect } from 'react-router'
 import { z } from 'zod'
 import { ErrorList, Field } from '~/components/forms'
 import { StatusButton } from '~/components/ui/status-button'
-import { db } from '~/data/db'
-import { UserRepository } from '~/data/repositories/user'
+import { repositoryFactory } from '~/data/factory'
 import { emailer } from '~/email/emailer'
 import { requireUserInOrganization } from '~/utils/auth/auth.server'
 import { newEmailAddressSessionKey } from '~/utils/auth/change-email.server'
@@ -35,7 +34,7 @@ export async function action({ request, params }: Route.ActionArgs) {
   const formData = await request.formData()
   const submission = await parseWithZod(formData, {
     schema: ChangeEmailSchema.refine(async (data) => {
-      const existingUser = await new UserRepository(db).findByEmail(data.email)
+      const existingUser = await repositoryFactory.getUserRepository().findByEmail(data.email)
       return !existingUser
     }, {
       message: 'This email is already in use.',

@@ -1,4 +1,4 @@
-import type { Insertable, Kysely, Selectable } from 'kysely'
+import type { Insertable, Kysely, Selectable, Transaction } from 'kysely'
 import type { Connection, DB } from 'kysely-codegen'
 
 // T = the returned entity type
@@ -13,8 +13,8 @@ export interface IConnectionRepository<T, E> {
 }
 
 export class ConnectionRepository implements IConnectionRepository<Selectable<Connection>, Insertable<Connection>> {
-  private db: Kysely<DB>
-  constructor(db: Kysely<DB>) {
+  private db: Kysely<DB> | Transaction<DB>
+  constructor(db: Kysely<DB> | Transaction<DB>) {
     this.db = db
   }
 

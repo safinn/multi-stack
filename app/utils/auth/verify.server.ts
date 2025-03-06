@@ -8,6 +8,7 @@ import { generateTOTP, verifyTOTP } from '@epic-web/totp'
 import { data } from 'react-router'
 import { uuidv7 } from 'uuidv7'
 import { db } from '~/data/db'
+import { repositoryFactory } from '~/data/factory'
 import { VerificationRepository } from '~/data/repositories/verification'
 import { codeQueryParam, redirectToQueryParam, targetQueryParam, typeQueryParam, VerifySchema } from '~/routes/auth/verify'
 import { getDomainUrl } from '../misc'
@@ -82,7 +83,7 @@ export async function createVerification({ request, type, target, period = 600, 
     createdAt: new Date(),
   }
 
-  await new VerificationRepository(db).create(verificationConfig)
+  await repositoryFactory.getVerificationRepository().create(verificationConfig)
 
   const verifyUrl = getRedirectToUrl({ request, type, target, redirectTo })
   const verifyRedirectTo = new URL(verifyUrl.toString())
@@ -101,7 +102,7 @@ export async function isCodeValid({
   type: VerificationTypes | typeof twoFAVerifyVerificationType
   target: string
 }) {
-  const verification = await new VerificationRepository(db)
+  const verification = await repositoryFactory.getVerificationRepository()
     .fetchLatest(type, target)
 
   if (!verification)
@@ -109,7 +110,7 @@ export async function isCodeValid({
 
   // if the verification has expired
   if (verification.expiresAt !== null && verification.expiresAt < new Date()) {
-    await new VerificationRepository(db).delete(type, target)
+    await repositoryFactory.getVerificationRepository().delete(type, target)
     return false
   }
 

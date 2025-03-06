@@ -6,13 +6,12 @@ import { Form, useRevalidator } from 'react-router'
 import { z } from 'zod'
 import { Button } from '~/components/ui/button'
 import { Icon } from '~/components/ui/icon'
-import { db } from '~/data/db'
-import { PasskeyRepository } from '~/data/repositories/passkeys'
+import { repositoryFactory } from '~/data/factory'
 import { requireUserInOrganization } from '~/utils/auth/auth.server'
 
 export async function loader({ request, params }: Route.LoaderArgs) {
   const { user } = await requireUserInOrganization(request, params.organizationId)
-  const passkeys = await new PasskeyRepository(db).findByUserId(user.id)
+  const passkeys = await repositoryFactory.getPasskeyRepository().findByUserId(user.id)
   return { passkeys: passkeys || [] }
 }
 
@@ -30,7 +29,7 @@ export async function action({ request, params }: Route.ActionArgs) {
       )
     }
 
-    await new PasskeyRepository(db).delete(passkeyId, user.id)
+    await repositoryFactory.getPasskeyRepository().delete(passkeyId, user.id)
     return Response.json({ status: 'success' })
   }
 

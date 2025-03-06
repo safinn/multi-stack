@@ -1,4 +1,4 @@
-import type { Kysely, Selectable } from 'kysely'
+import type { Kysely, Selectable, Transaction } from 'kysely'
 import type { DB, Membership, Organization, User } from 'kysely-codegen'
 import { jsonObjectFrom } from 'kysely/helpers/postgres'
 
@@ -11,19 +11,19 @@ export interface UserPassword {
 
 export type MembershipUser = Selectable<Membership & { user?: Selectable<User> }>
 export type MembershipOrganization = Selectable<Membership & { organization?: Selectable<Organization> }>
-export type IdOrUsername = { id: string} | { username: string }
+export type IdOrUsername = { id: string } | { username: string }
 
 // T = the returned UP entity type
 export interface IIdentityRepository<UP, M, MU, MO> {
-  findUserByIdOrUsernameWithPassword: (identifier: { id: string} | { username: string }) => Promise<UP | undefined>
+  findUserByIdOrUsernameWithPassword: (identifier: { id: string } | { username: string }) => Promise<UP | undefined>
   findMembershipByUserAndOrganizationShortId: (userId: string, organizationShortId?: string) => Promise<M | undefined>
   findMembershipsByOrganizationWithUsers: (organizationId: string) => Promise<MU[]>
   findMembershipsByUserWithOrganization: (userId: string) => Promise<MO[]>
 }
 
 export class IdentityRespository implements IIdentityRepository<UserPassword, Selectable<Membership>, MembershipUser, MembershipOrganization> {
-  private db: Kysely<DB>
-  constructor(db: Kysely<DB>) {
+  private db: Kysely<DB> | Transaction<DB>
+  constructor(db: Kysely<DB> | Transaction<DB>) {
     this.db = db
   }
 

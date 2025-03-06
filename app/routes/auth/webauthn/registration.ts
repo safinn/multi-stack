@@ -4,15 +4,14 @@ import {
   generateRegistrationOptions,
   verifyRegistrationResponse,
 } from '@simplewebauthn/server'
-import { db } from '~/data/db'
-import { PasskeyRepository } from '~/data/repositories/passkeys'
+import { repositoryFactory } from '~/data/factory'
 import { requireUserInOrganization } from '~/utils/auth/auth.server'
 import { getDomainUrl, getErrorMessage } from '~/utils/misc'
 import { getWebAuthnConfig, passkeyCookie, PasskeyCookieSchema, RegistrationResponseSchema } from './utils.server'
 
 export async function loader({ request, params }: Route.LoaderArgs) {
   const { user } = await requireUserInOrganization(request, params.organizationId)
-  const passkeys = await new PasskeyRepository(db).findByUserId(user.id)
+  const passkeys = await repositoryFactory.getPasskeyRepository().findByUserId(user.id)
 
   const config = getWebAuthnConfig(request)
   const options = await generateRegistrationOptions({
@@ -84,13 +83,13 @@ export async function action({ request, params }: Route.ActionArgs) {
     }
     const { credential, credentialDeviceType, credentialBackedUp, aaguid } = registrationInfo
 
-    const existingPasskey = await new PasskeyRepository(db).findById(credential.id)
+    const existingPasskey = await repositoryFactory.getPasskeyRepository().findById(credential.id)
     if (existingPasskey) {
       throw new Error('This passkey has already been registered')
     }
 
     // Create new passkey in database
-    await new PasskeyRepository(db).create({
+    await repositoryFactory.getPasskeyRepository().create({
       id: credential.id,
       aaguid,
       publicKey: Buffer.from(credential.publicKey),

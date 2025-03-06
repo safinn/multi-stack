@@ -2,8 +2,8 @@ import type { Route } from './+types/authentication'
 import { generateAuthenticationOptions, verifyAuthenticationResponse } from '@simplewebauthn/server'
 import { uuidv7 } from 'uuidv7'
 import { db } from '~/data/db'
+import { repositoryFactory } from '~/data/factory'
 import { PasskeyRepository } from '~/data/repositories/passkeys'
-import { SessionRepository } from '~/data/repositories/session'
 import { getSessionExpirationDate } from '~/utils/auth/auth.server'
 import { handleNewSession } from '~/utils/auth/login.server'
 import { getWebAuthnConfig, passkeyCookie, PasskeyLoginBodySchema } from './utils.server'
@@ -68,7 +68,7 @@ export async function action({ request }: Route.ActionArgs) {
       counter: BigInt(verification.authenticationInfo.newCounter),
     })
 
-    const session = await new SessionRepository(db).create({
+    const session = await repositoryFactory.getSessionRepository().create({
       id: uuidv7(),
       expirationDate: getSessionExpirationDate(),
       userId: passkey.userId,

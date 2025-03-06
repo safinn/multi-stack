@@ -7,6 +7,7 @@ import { Icon } from '~/components/ui/icon'
 import { StatusButton } from '~/components/ui/status-button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '~/components/ui/tooltip'
 import { db } from '~/data/db'
+import { repositoryFactory } from '~/data/factory'
 import { ConnectionRepository } from '~/data/repositories/connection'
 import { PasswordRepository } from '~/data/repositories/password'
 import { requireUserInOrganization } from '~/utils/auth/auth.server'
@@ -30,7 +31,7 @@ async function userCanDeleteConnections(userId: string) {
 
 export async function loader({ request, params }: Route.LoaderArgs) {
   const { user } = await requireUserInOrganization(request, params.organizationId)
-  const rawConnections = await new ConnectionRepository(db).findByUserId(user.id)
+  const rawConnections = await repositoryFactory.getConnectionRepository().findByUserId(user.id)
   const connections: Array<{
     providerName: ProviderName
     id: string
@@ -76,7 +77,7 @@ export async function action({ request, params }: Route.ActionArgs) {
   const connectionId = formData.get('connectionId')
   invariantResponse(typeof connectionId === 'string', 'Invalid connectionId')
 
-  await new ConnectionRepository(db).delete(connectionId, user.id)
+  await repositoryFactory.getConnectionRepository().delete(connectionId, user.id)
 
   const toastHeaders = await createToastHeaders({
     title: 'Deleted',

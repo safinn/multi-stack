@@ -1,4 +1,4 @@
-import type { Kysely, Selectable } from 'kysely'
+import type { Kysely, Selectable, Transaction } from 'kysely'
 import type { DB, Role } from 'kysely-codegen'
 
 // T = the returned entity type
@@ -7,8 +7,8 @@ export interface IRoleRepository<T> {
 }
 
 export class RoleRepository implements IRoleRepository<Selectable<Role>> {
-  private db: Kysely<DB>
-  constructor(db: Kysely<DB>) {
+  private db: Kysely<DB> | Transaction<DB>
+  constructor(db: Kysely<DB> | Transaction<DB>) {
     this.db = db
   }
 

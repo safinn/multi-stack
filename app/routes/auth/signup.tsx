@@ -9,10 +9,7 @@ import { z } from 'zod'
 import { ErrorList, Field } from '~/components/forms'
 import { Separator } from '~/components/ui/separator'
 import { StatusButton } from '~/components/ui/status-button'
-import { db } from '~/data/db'
-import { MembershipRepository } from '~/data/repositories/membership'
-import { OrganizationRepository } from '~/data/repositories/organization'
-import { UserRepository } from '~/data/repositories/user'
+import { repositoryFactory } from '~/data/factory'
 import { emailer } from '~/email/emailer'
 import { getUser, requireAnonymous } from '~/utils/auth/auth.server'
 import { createVerification, invitationQueryParam } from '~/utils/auth/verify.server'
@@ -29,9 +26,9 @@ export async function loader({ request }: Route.LoaderArgs) {
     const user = await getUser(request)
     // Claim the invitation for the logged in user
     if (user) {
-      const membership = await new MembershipRepository(db).claim(user.id, invitationId)
+      const membership = await repositoryFactory.getMembershipRepository().claim(user.id, invitationId)
       if (membership) {
-        const organization = await new OrganizationRepository(db).findById(membership.organizationId)
+        const organization = await repositoryFactory.getOrganizationRepository().findById(membership.organizationId)
         return redirect(href('/app/:organizationId?', { organizationId: organization?.shortId }))
       }
     }
@@ -54,7 +51,7 @@ export async function action({ request }: Route.ActionArgs) {
   const submission = await parseWithZod(formData, {
     schema: SignupSchema.refine(async (data) => {
       // Check if a user with the email already exists
-      const user = await new UserRepository(db).findByEmail(data.email)
+      const user = await repositoryFactory.getUserRepository().findByEmail(data.email)
       return !user
     }, {
       message: 'A user with this email already exists',

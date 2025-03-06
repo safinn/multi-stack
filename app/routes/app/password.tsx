@@ -6,15 +6,14 @@ import { z } from 'zod'
 import { ErrorList, Field } from '~/components/forms'
 import { Button } from '~/components/ui/button'
 import { StatusButton } from '~/components/ui/status-button'
-import { db } from '~/data/db'
-import { PasswordRepository } from '~/data/repositories/password'
+import { repositoryFactory } from '~/data/factory'
 import { getPasswordHash, requireUserInOrganization, verifyUserPassword } from '~/utils/auth/auth.server'
 import { useIsPending } from '~/utils/misc'
 import { redirectWithToast } from '~/utils/toast.server'
 import { PasswordSchema } from '~/utils/user-validation'
 
 async function requirePassword(userId: string, organizationId?: string) {
-  const password = await new PasswordRepository(db).findByUserId(userId)
+  const password = await repositoryFactory.getPasswordRepository().findByUserId(userId)
   if (!password) {
     const redirectTo = ['/app', organizationId, 'settings', 'password', 'create']
       .filter(Boolean)
@@ -72,7 +71,7 @@ export async function action({ request, params }: Route.ActionArgs) {
 
   const { newPassword } = submission.value
 
-  await new PasswordRepository(db).patchByUserId(user.id, {
+  await repositoryFactory.getPasswordRepository().patchByUserId(user.id, {
     hash: await getPasswordHash(newPassword),
   })
 

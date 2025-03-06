@@ -5,8 +5,7 @@ import { data, Form, Link, redirect } from 'react-router'
 import { ErrorList, Field } from '~/components/forms'
 import { Button } from '~/components/ui/button'
 import { StatusButton } from '~/components/ui/status-button'
-import { db } from '~/data/db'
-import { PasswordRepository } from '~/data/repositories/password'
+import { repositoryFactory } from '~/data/factory'
 import { getPasswordHash, requireUserInOrganization } from '~/utils/auth/auth.server'
 import { useIsPending } from '~/utils/misc'
 import { PasswordAndConfirmPasswordSchema } from '~/utils/user-validation'
@@ -14,7 +13,7 @@ import { PasswordAndConfirmPasswordSchema } from '~/utils/user-validation'
 const CreatePasswordForm = PasswordAndConfirmPasswordSchema
 
 async function requireNoPassword(userId: string, organizationId?: string) {
-  const password = await new PasswordRepository(db).findByUserId(userId)
+  const password = await repositoryFactory.getPasswordRepository().findByUserId(userId)
   if (password) {
     const redirectTo = ['/app', organizationId, 'settings', 'password']
       .filter(Boolean)
@@ -48,7 +47,7 @@ export async function action({ request, params }: Route.ActionArgs) {
 
   const { password } = submission.value
 
-  await new PasswordRepository(db).create({
+  await repositoryFactory.getPasswordRepository().create({
     userId: user.id,
     hash: await getPasswordHash(password),
   })

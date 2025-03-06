@@ -5,8 +5,7 @@ import { Link, redirect, useFetcher } from 'react-router'
 import { uuidv7 } from 'uuidv7'
 import { Icon } from '~/components/ui/icon'
 import { StatusButton } from '~/components/ui/status-button'
-import { db } from '~/data/db'
-import { VerificationRepository } from '~/data/repositories/verification'
+import { repositoryFactory } from '~/data/factory'
 import { requireUserInOrganization } from '~/utils/auth/auth.server'
 import { twoFAVerifyVerificationType } from '~/utils/auth/verify.server'
 
@@ -14,7 +13,7 @@ export const twoFAVerificationType = '2fa' satisfies VerificationTypes
 
 export async function loader({ request, params }: Route.LoaderArgs) {
   const { user } = await requireUserInOrganization(request, params.organizationId)
-  const verification = await new VerificationRepository(db).fetchLatest(twoFAVerificationType, user.id)
+  const verification = await repositoryFactory.getVerificationRepository().fetchLatest(twoFAVerificationType, user.id)
   return { is2FAEnabled: Boolean(verification), user }
 }
 
@@ -28,7 +27,7 @@ export async function action({ request, params }: Route.ActionArgs) {
     target: user.id,
   }
 
-  await new VerificationRepository(db).upsert({
+  await repositoryFactory.getVerificationRepository().upsert({
     ...verificationData,
     id: uuidv7(),
   })

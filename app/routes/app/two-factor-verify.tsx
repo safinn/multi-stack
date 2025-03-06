@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { ErrorList, OTPField } from '~/components/forms'
 import { StatusButton } from '~/components/ui/status-button'
 import { db } from '~/data/db'
+import { repositoryFactory } from '~/data/factory'
 import { VerificationRepository } from '~/data/repositories/verification'
 import { requireUserInOrganization } from '~/utils/auth/auth.server'
 import { isCodeValid } from '~/utils/auth/verify.server'
@@ -31,7 +32,7 @@ const ActionSchema = z.discriminatedUnion('intent', [
 export async function loader({ request, params }: Route.LoaderArgs) {
   const { user } = await requireUserInOrganization(request, params.organizationId)
 
-  const verification = await new VerificationRepository(db).fetchLatest(twoFAVerifyVerificationType, user.id)
+  const verification = await repositoryFactory.getVerificationRepository().fetchLatest(twoFAVerifyVerificationType, user.id)
   if (!verification) {
     const redirectTo = ['/app', params.organizationId, 'settings', 'two-factor']
       .filter(Boolean)

@@ -7,8 +7,7 @@ import { safeRedirect } from 'remix-utils/safe-redirect'
 import { z } from 'zod'
 import { CheckboxField, Field } from '~/components/forms'
 import { StatusButton } from '~/components/ui/status-button'
-import { db } from '~/data/db'
-import { UserRepository } from '~/data/repositories/user'
+import { repositoryFactory } from '~/data/factory'
 import { requireAnonymous, sessionKey, signup } from '~/utils/auth/auth.server'
 import { onboardingEmailSessionKey } from '~/utils/auth/onboarding.server'
 import { authSessionStorage } from '~/utils/auth/session.server'
@@ -53,7 +52,7 @@ export async function action({ request }: Route.ActionArgs) {
   await checkHoneypot(formData)
   const submission = await parseWithZod(formData, {
     schema: intent => SignupFormSchema.refine(async (data) => {
-      const existingUser = await new UserRepository(db).findByUsername(data.username)
+      const existingUser = await repositoryFactory.getUserRepository().findByUsername(data.username)
       return !existingUser
     }, {
       message: 'A user already exists with this username',

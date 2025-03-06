@@ -1,8 +1,7 @@
 import type { AuthProvider, ProviderUser } from './provider'
 import process from 'node:process'
 import { GoogleStrategy } from '@coji/remix-auth-google'
-import { db } from '~/data/db'
-import { ConnectionRepository } from '~/data/repositories/connection'
+import { repositoryFactory } from '~/data/factory'
 
 export class GoogleProvider implements AuthProvider {
   getAuthStrategy() {
@@ -27,7 +26,7 @@ export class GoogleProvider implements AuthProvider {
   }
 
   async resolveConnectionData(providerId: string) {
-    const connection = await new ConnectionRepository(db).findByProviderNameAndId('google', providerId)
+    const connection = await repositoryFactory.getConnectionRepository().findByProviderNameAndId('google', providerId)
     return {
       displayName: connection?.providerDisplayName ?? 'Unknown',
       link: null,

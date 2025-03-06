@@ -1,8 +1,7 @@
 import type { VerifyFunctionArgs } from './verify.server'
 import { invariant } from '@epic-web/invariant'
 import { data, href, redirect } from 'react-router'
-import { db } from '~/data/db'
-import { UserRepository } from '~/data/repositories/user'
+import { repositoryFactory } from '~/data/factory'
 import { resetPasswordUsernameSessionKey } from '~/routes/auth/reset-password'
 import { targetQueryParam } from '~/routes/auth/verify'
 import { verifySessionStorage } from './verification.sever'
@@ -13,7 +12,7 @@ export async function handleVerification({ submission }: VerifyFunctionArgs) {
     'Submission should be successful by now',
   )
   const target = submission.value[targetQueryParam]
-  const user = await new UserRepository(db).findByUsernameOrEmail(target)
+  const user = await repositoryFactory.getUserRepository().findByUsernameOrEmail(target)
 
   // Pretend code is invalid if the user doesn't exist
   if (!user) {

@@ -5,8 +5,7 @@ import { data, Form, href, redirect } from 'react-router'
 import { z } from 'zod'
 import { ErrorList, Field } from '~/components/forms'
 import { StatusButton } from '~/components/ui/status-button'
-import { db } from '~/data/db'
-import { OrganizationRepository } from '~/data/repositories/organization'
+import { repositoryFactory } from '~/data/factory'
 import { requireUserInOrganization } from '~/utils/auth/auth.server'
 import { useDoubleCheck, useIsPending } from '~/utils/misc'
 import { requireUserWithOrganizationPermission } from '~/utils/permissions.server'
@@ -48,7 +47,7 @@ export async function action({ request, params }: Route.ActionArgs) {
   switch (submission.value.intent) {
     case 'update': {
       await requireUserWithOrganizationPermission(request, organiastion.shortId, 'update:organization:own')
-      await new OrganizationRepository(db).patch(organiastion.id, {
+      await repositoryFactory.getOrganizationRepository().patch(organiastion.id, {
         name: submission.value.name,
       })
       return submission.reply()
@@ -58,7 +57,7 @@ export async function action({ request, params }: Route.ActionArgs) {
       if (organiastion.personalOrganizationUserId) {
         throw new Response('Cannot delete personal organization', { status: 400 })
       }
-      await new OrganizationRepository(db).delete(organiastion.id)
+      await repositoryFactory.getOrganizationRepository().delete(organiastion.id)
       return redirect(href('/app/:organizationId?'))
     }
   }

@@ -1,4 +1,4 @@
-import type { Insertable, Kysely, Selectable } from 'kysely'
+import type { Insertable, Kysely, Selectable, Transaction } from 'kysely'
 import type { DB, Session } from 'kysely-codegen'
 
 // T = the returned entity type
@@ -14,8 +14,8 @@ export interface ISessionRepository<T, E> {
 }
 
 export class SessionRepository implements ISessionRepository<Selectable<Session>, Insertable<Session>> {
-  private db: Kysely<DB>
-  constructor(db: Kysely<DB>) {
+  private db: Kysely<DB> | Transaction<DB>
+  constructor(db: Kysely<DB> | Transaction<DB>) {
     this.db = db
   }
 

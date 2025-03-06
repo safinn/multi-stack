@@ -1,4 +1,4 @@
-import type { Kysely, Selectable } from 'kysely'
+import type { Kysely, Selectable, Transaction } from 'kysely'
 import type { DB, Permission } from 'kysely-codegen'
 
 // T = the returned entity type
@@ -7,8 +7,8 @@ export interface IPermissionRepository<T> {
 }
 
 export class PermissionRepository implements IPermissionRepository<Selectable<Permission>> {
-  private db: Kysely<DB>
-  constructor(db: Kysely<DB>) {
+  private db: Kysely<DB> | Transaction<DB>
+  constructor(db: Kysely<DB> | Transaction<DB>) {
     this.db = db
   }
 

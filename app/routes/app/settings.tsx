@@ -4,11 +4,7 @@ import { useFetcher } from 'react-router'
 import ArrowLink from '~/components/arrow-link'
 import { Icon } from '~/components/ui/icon'
 import { StatusButton } from '~/components/ui/status-button'
-import { db } from '~/data/db'
-import { PasswordRepository } from '~/data/repositories/password'
-import { SessionRepository } from '~/data/repositories/session'
-import { UserRepository } from '~/data/repositories/user'
-import { VerificationRepository } from '~/data/repositories/verification'
+import { repositoryFactory } from '~/data/factory'
 import { requireUserInOrganization, sessionKey } from '~/utils/auth/auth.server'
 import { twoFAVerificationType } from '~/utils/auth/login.server'
 import { authSessionStorage } from '~/utils/auth/session.server'
@@ -18,9 +14,11 @@ import { redirectWithToast } from '~/utils/toast.server'
 export async function loader({ request, params }: Route.LoaderArgs) {
   const { user } = await requireUserInOrganization(request, params.organizationId)
 
-  const sessions = await new SessionRepository(db).sessionCount(user.id)
-  const twoFactorVerification = await new VerificationRepository(db).fetchLatest(twoFAVerificationType, user.id)
-  const password = await new PasswordRepository(db).findByUserId(user.id)
+  const [sessions, twoFactorVerification, password] = await Promise.all([
+    repositoryFactory.getSessionRepository().sessionCount(user.id),
+    repositoryFactory.getVerificationRepository().fetchLatest(twoFAVerificationType, user.id),
+    repositoryFactory.getPasswordRepository().findByUserId(user.id),
+  ])
 
   return {
     user,
@@ -121,7 +119,7 @@ async function signOutOfSessionsAction({ request, userId }: ProfileActionArgs) {
     'You must be authenticated to sign out of other sessions',
   )
 
-  await new SessionRepository(db).deleteAllExceptCurrent(userId, sessionId)
+  await repositoryFactory.getSessionRepository().deleteAllExceptCurrent(userId, sessionId)
 
   return { status: 'success' } as const
 }
@@ -170,7 +168,7 @@ function SignOutOfSessions({
 }
 
 async function deleteDataAction({ userId }: ProfileActionArgs) {
-  await new UserRepository(db).delete(userId)
+  await repositoryFactory.getUserRepository().delete(userId)
 
   return redirectWithToast('/', {
     type: 'success',

@@ -8,8 +8,7 @@ import { HoneypotInputs } from 'remix-utils/honeypot/react'
 import { z } from 'zod'
 import { ErrorList, Field } from '~/components/forms'
 import { StatusButton } from '~/components/ui/status-button'
-import { db } from '~/data/db'
-import { UserRepository } from '~/data/repositories/user'
+import { repositoryFactory } from '~/data/factory'
 import { emailer } from '~/email/emailer'
 import { createVerification } from '~/utils/auth/verify.server'
 import { checkHoneypot } from '~/utils/honeypot.server'
@@ -24,7 +23,7 @@ export async function action({ request }: Route.ActionArgs) {
   await checkHoneypot(formData)
   const submission = await parseWithZod(formData, {
     schema: ForgotPasswordSchema.refine(async (data) => {
-      const user = await new UserRepository(db).findByUsernameOrEmail(data.usernameOrEmail)
+      const user = await repositoryFactory.getUserRepository().findByUsernameOrEmail(data.usernameOrEmail)
       return user
     }, {
       path: ['usernameOrEmail'],
@@ -42,7 +41,7 @@ export async function action({ request }: Route.ActionArgs) {
 
   const { usernameOrEmail } = submission.value
 
-  const user = await new UserRepository(db).findByUsernameOrEmail(usernameOrEmail)
+  const user = await repositoryFactory.getUserRepository().findByUsernameOrEmail(usernameOrEmail)
   invariantResponse(user, 'Should have a user')
 
   const { verifyUrl, redirectTo, otp } = await createVerification({

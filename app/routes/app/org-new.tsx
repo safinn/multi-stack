@@ -6,9 +6,7 @@ import { uuidv7 } from 'uuidv7'
 import { z } from 'zod'
 import { ErrorList, Field } from '~/components/forms'
 import { StatusButton } from '~/components/ui/status-button'
-import { db } from '~/data/db'
-import { MembershipRepository } from '~/data/repositories/membership'
-import { OrganizationRepository } from '~/data/repositories/organization'
+import { repositoryFactory } from '~/data/factory'
 import { requireUserInOrganization } from '~/utils/auth/auth.server'
 import { shortId, useIsPending } from '~/utils/misc'
 
@@ -39,7 +37,7 @@ export async function action({ request, params }: Route.ActionArgs) {
     )
   }
 
-  const org = await new OrganizationRepository(db).create({
+  const org = await repositoryFactory.getOrganizationRepository().create({
     id: uuidv7(),
     name: submission.value.name,
     shortId: shortId(6),
@@ -49,7 +47,7 @@ export async function action({ request, params }: Route.ActionArgs) {
     throw new Error('Failed to create organization')
   }
 
-  const membership = await new MembershipRepository(db).create({
+  const membership = await repositoryFactory.getMembershipRepository().create({
     id: uuidv7(),
     organizationId: org.id,
     userId: user.id,

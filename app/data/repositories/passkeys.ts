@@ -1,4 +1,4 @@
-import type { Insertable, Kysely, Selectable } from 'kysely'
+import type { Insertable, Kysely, Selectable, Transaction } from 'kysely'
 import type { DB, Passkey } from 'kysely-codegen'
 
 // T = the returned entity type
@@ -12,8 +12,8 @@ export interface IPasskeyRepository<T, E> {
 }
 
 export class PasskeyRepository implements IPasskeyRepository<Selectable<Passkey>, Insertable<Passkey>> {
-  private db: Kysely<DB>
-  constructor(db: Kysely<DB>) {
+  private db: Kysely<DB> | Transaction<DB>
+  constructor(db: Kysely<DB> | Transaction<DB>) {
     this.db = db
   }
 

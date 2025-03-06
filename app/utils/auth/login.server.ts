@@ -3,9 +3,7 @@ import type { VerificationTypes } from '~/routes/auth/verify'
 import { invariant } from '@epic-web/invariant'
 import { redirect } from 'react-router'
 import { safeRedirect } from 'remix-utils/safe-redirect'
-import { db } from '~/data/db'
-import { SessionRepository } from '~/data/repositories/session'
-import { VerificationRepository } from '~/data/repositories/verification'
+import { repositoryFactory } from '~/data/factory'
 import { combineResponseInits } from '../misc'
 import { redirectWithToast } from '../toast.server'
 import { getUser, sessionKey } from './auth.server'
@@ -31,7 +29,7 @@ export async function shouldRequestTwoFA(request: Request) {
     return false
 
   // if it's over two hours since they last verified, we should request 2FA again
-  const userHasTwoFA = await new VerificationRepository(db).fetchLatest(twoFAVerifyVerificationType, user.id)
+  const userHasTwoFA = await repositoryFactory.getVerificationRepository().fetchLatest(twoFAVerifyVerificationType, user.id)
 
   if (!userHasTwoFA)
     return false
@@ -61,7 +59,7 @@ export async function handleVerification({ request, submission }: VerifyFunction
   const unverifiedSessionId = verifySession.get(unverifiedSessionIdKey)
 
   if (unverifiedSessionId) {
-    const session = await new SessionRepository(db).findById(unverifiedSessionId)
+    const session = await repositoryFactory.getSessionRepository().findById(unverifiedSessionId)
     if (!session) {
       throw await redirectWithToast('/login', {
         type: 'error',
@@ -113,7 +111,7 @@ export async function handleNewSession(
   },
   responseInit?: ResponseInit,
 ) {
-  const verification = await new VerificationRepository(db).fetchLatest(twoFAVerificationType, session.userId)
+  const verification = await repositoryFactory.getVerificationRepository().fetchLatest(twoFAVerificationType, session.userId)
   const userHasTwoFactor = Boolean(verification)
 
   if (userHasTwoFactor) {

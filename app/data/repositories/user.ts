@@ -1,4 +1,4 @@
-import type { Insertable, Kysely, Selectable, Updateable } from 'kysely'
+import type { Insertable, Kysely, Selectable, Transaction, Updateable } from 'kysely'
 import type { DB, User } from 'kysely-codegen'
 
 // T = the returned entity type
@@ -15,8 +15,8 @@ export interface IUserRepository<T, E, U> {
 }
 
 export class UserRepository implements IUserRepository<Selectable<User>, Insertable<User>, Updateable<User>> {
-  private db: Kysely<DB>
-  constructor(db: Kysely<DB>) {
+  private db: Kysely<DB> | Transaction<DB>
+  constructor(db: Kysely<DB> | Transaction<DB>) {
     this.db = db
   }
 

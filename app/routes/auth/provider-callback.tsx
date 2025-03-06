@@ -1,12 +1,7 @@
 import type { Route } from './+types/provider-callback'
 import { redirect } from 'react-router'
 import { uuidv7 } from 'uuidv7'
-import { db } from '~/data/db'
-import { ConnectionRepository } from '~/data/repositories/connection'
-import { MembershipRepository } from '~/data/repositories/membership'
-import { OrganizationRepository } from '~/data/repositories/organization'
-import { SessionRepository } from '~/data/repositories/session'
-import { UserRepository } from '~/data/repositories/user'
+import { repositoryFactory } from '~/data/factory'
 import { authenticator, getSessionExpirationDate, getUser } from '~/utils/auth/auth.server'
 import { handleNewSession } from '~/utils/auth/login.server'
 import { onboardingEmailSessionKey } from '~/utils/auth/onboarding.server'
@@ -59,7 +54,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 
   const { data: profile } = authResult
 
-  const existingConnection = await new ConnectionRepository(db).findByProviderNameAndId(providerName, profile.id.toString())
+  const existingConnection = await repositoryFactory.getConnectionRepository().findByProviderNameAndId(providerName, profile.id.toString())
 
   const user = await getUser(request)
 
@@ -68,7 +63,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   if (existingConnection && user) {
     if (existingConnection.userId === user.id) {
       if (invitationId) {
-        await new MembershipRepository(db).claim(user.id, invitationId)
+        await repositoryFactory.getMembershipRepository().claim(user.id, invitationId)
       }
 
       return redirectWithToast(
@@ -94,7 +89,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 
   // If we're already logged in, then link the account
   if (user) {
-    await new ConnectionRepository(db).create({
+    await repositoryFactory.getConnectionRepository().create({
       id: uuidv7(),
       providerName,
       providerId: profile.id.toString(),
@@ -103,7 +98,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     })
 
     if (invitationId) {
-      await new MembershipRepository(db).claim(user.id, invitationId)
+      await repositoryFactory.getMembershipRepository().claim(user.id, invitationId)
     }
 
     return redirectWithToast(
@@ -120,16 +115,16 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   // Connection exists already? Make a new session
   if (existingConnection) {
     if (invitationId) {
-      await new MembershipRepository(db).claim(existingConnection.userId, invitationId)
+      await repositoryFactory.getMembershipRepository().claim(existingConnection.userId, invitationId)
     }
     return makeSession({ request, userId: existingConnection.userId, invitationId })
   }
 
   // if the email matches a user in the db, then link the account and
   // make a new session
-  const existingUser = await new UserRepository(db).findByEmail(profile.email.toLowerCase())
+  const existingUser = await repositoryFactory.getUserRepository().findByEmail(profile.email.toLowerCase())
   if (existingUser) {
-    await new ConnectionRepository(db).create({
+    await repositoryFactory.getConnectionRepository().create({
       id: uuidv7(),
       providerName,
       providerId: profile.id.toString(),
@@ -138,7 +133,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     })
 
     if (invitationId) {
-      await new MembershipRepository(db).claim(existingUser.id, invitationId)
+      await repositoryFactory.getMembershipRepository().claim(existingUser.id, invitationId)
     }
 
     return makeSession(
@@ -197,14 +192,14 @@ async function makeSession(
 ) {
   redirectTo ??= '/'
   if (invitationId) {
-    const membership = await new MembershipRepository(db).findByInvitationId(invitationId)
+    const membership = await repositoryFactory.getMembershipRepository().findByInvitationId(invitationId)
     if (membership) {
-      const organization = await new OrganizationRepository(db).findById(membership.organizationId)
+      const organization = await repositoryFactory.getOrganizationRepository().findById(membership.organizationId)
       redirectTo = `/app/${organization?.shortId}`
     }
   }
 
-  const session = await new SessionRepository(db).create({
+  const session = await repositoryFactory.getSessionRepository().create({
     id: uuidv7(),
     userId,
     expirationDate: getSessionExpirationDate(),

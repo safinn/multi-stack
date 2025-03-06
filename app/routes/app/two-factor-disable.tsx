@@ -1,8 +1,7 @@
 import type { Route } from './+types/two-factor-disable'
 import { useFetcher } from 'react-router'
 import { StatusButton } from '~/components/ui/status-button'
-import { db } from '~/data/db'
-import { VerificationRepository } from '~/data/repositories/verification'
+import { repositoryFactory } from '~/data/factory'
 import { requireUserInOrganization } from '~/utils/auth/auth.server'
 import { requireRecentVerification } from '~/utils/auth/verify.server'
 import { useDoubleCheck } from '~/utils/misc'
@@ -20,7 +19,7 @@ export async function action({ request, params }: Route.ActionArgs) {
   await requireRecentVerification(request)
   const { user } = await requireUserInOrganization(request, params.organizationId)
 
-  await new VerificationRepository(db).delete(twoFAVerificationType, user.id)
+  await repositoryFactory.getVerificationRepository().delete(twoFAVerificationType, user.id)
 
   const redirectTo = ['/app', params.organizationId, 'settings', 'two-factor']
     .filter(Boolean)

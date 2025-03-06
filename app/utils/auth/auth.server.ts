@@ -1,17 +1,15 @@
 import type { Connection, Password, User } from 'kysely-codegen'
 import type { ProviderUser } from '../providers/provider'
+import type { IdOrUsername } from '~/data/repositories/identity'
 import argon2 from '@node-rs/argon2'
 import { data, href, redirect } from 'react-router'
 import { Authenticator } from 'remix-auth'
 import { safeRedirect } from 'remix-utils/safe-redirect'
 import { uuidv7 } from 'uuidv7'
 import { db } from '~/data/db'
-import { ConnectionRepository } from '~/data/repositories/connection'
-import { IdentityRespository, type IdOrUsername } from '~/data/repositories/identity'
-import { MembershipRepository } from '~/data/repositories/membership'
-import { OrganizationRepository } from '~/data/repositories/organization'
+import { repositoryFactory } from '~/data/factory'
+import { IdentityRespository } from '~/data/repositories/identity'
 import { PasswordRepository } from '~/data/repositories/password'
-import { SessionRepository } from '~/data/repositories/session'
 import { UserRepository } from '~/data/repositories/user'
 import { providers } from '../connections.server'
 import { combineHeaders, shortId } from '../misc'
@@ -47,11 +45,11 @@ export async function getUser(request: Request) {
   if (!sessionId)
     return null
 
-  const session = await new SessionRepository(db).findById(sessionId)
+  const session = await repositoryFactory.getSessionRepository().findById(sessionId)
 
   // If the session is valid, attempt to return the user
   if (session && session.expirationDate.getTime() >= Date.now()) {
-    const user = await new UserRepository(db).findById(session.userId)
+    const user = await repositoryFactory.getUserRepository().findById(session.userId)
     if (user) {
       return user
     }
@@ -78,7 +76,7 @@ export async function getUserOrganizationMembership(request: Request, organizati
   if (!sessionId)
     return null
 
-  const session = await new SessionRepository(db).findById(sessionId)
+  const session = await repositoryFactory.getSessionRepository().findById(sessionId)
 
   // If the session is valid, attempt to return the user
   if (session && session.expirationDate.getTime() >= Date.now()) {
@@ -88,7 +86,7 @@ export async function getUserOrganizationMembership(request: Request, organizati
     ])
 
     if (membership) {
-      const organization = await new OrganizationRepository(db).findById(membership.organizationId)
+      const organization = await repositoryFactory.getOrganizationRepository().findById(membership.organizationId)
       return { user, organization }
     }
 
@@ -186,8 +184,8 @@ export async function signup({
 }) {
   const hashedPassword = await getPasswordHash(password)
 
-  const session = await db.transaction().execute(async (tx) => {
-    const user = await new UserRepository(tx).create({
+  return await repositoryFactory.transaction(async (tx) => {
+    const user = await tx.getUserRepository().create({
       id: uuidv7(),
       email: email.toLocaleLowerCase(),
       username,
@@ -196,7 +194,7 @@ export async function signup({
       throw new Error('Failed to create user')
     }
 
-    const organization = await new OrganizationRepository(tx).create({
+    const organization = await tx.getOrganizationRepository().create({
       id: uuidv7(),
       shortId: shortId(6),
       name: username,
@@ -207,9 +205,7 @@ export async function signup({
       throw new Error('Failed to create organization')
     }
 
-    const membershipRepository = new MembershipRepository(tx)
-
-    const membership = await membershipRepository.create({
+    const membership = await tx.getMembershipRepository().create({
       id: uuidv7(),
       organizationId: organization.id,
       userId: user.id,
@@ -220,10 +216,10 @@ export async function signup({
     }
 
     if (invitationId) {
-      await membershipRepository.claim(user.id, invitationId)
+      await tx.getMembershipRepository().claim(user.id, invitationId)
     }
 
-    const password = await new PasswordRepository(tx).create({
+    const password = await tx.getPasswordRepository().create({
       userId: user.id,
       hash: hashedPassword,
     })
@@ -231,7 +227,7 @@ export async function signup({
       throw new Error('Failed to create password')
     }
 
-    const session = await new SessionRepository(tx).create({
+    const session = await tx.getSessionRepository().create({
       id: uuidv7(),
       userId: user.id,
       expirationDate: getSessionExpirationDate(),
@@ -242,8 +238,6 @@ export async function signup({
 
     return session
   })
-
-  return session
 }
 
 export async function logout(
@@ -263,7 +257,7 @@ export async function logout(
   // if this fails, we still need to delete the session from the user's browser
   // and it doesn't do any harm staying in the db anyway.
   if (sessionId) {
-    await new SessionRepository(db).delete(sessionId)
+    await repositoryFactory.getSessionRepository().delete(sessionId)
   }
   throw redirect(safeRedirect(redirectTo), {
     ...responseInit,
@@ -285,7 +279,7 @@ export async function login({
   if (!user)
     return null
 
-  const session = await new SessionRepository(db).create({
+  const session = await repositoryFactory.getSessionRepository().create({
     id: uuidv7(),
     expirationDate: getSessionExpirationDate(),
     userId: user.id,
@@ -293,7 +287,7 @@ export async function login({
 
   // Attempt to claim the invitation if there is one
   if (invitationId) {
-    await new MembershipRepository(db).claim(user.id, invitationId)
+    await repositoryFactory.getMembershipRepository().claim(user.id, invitationId)
   }
 
   return session
@@ -303,7 +297,7 @@ export async function verifyUserPassword(
   where: IdOrUsername,
   password: Password['hash'],
 ) {
-  const userWithPassword = await new IdentityRespository(db)
+  const userWithPassword = await repositoryFactory.getIdentityRepository()
     .findUserByIdOrUsernameWithPassword(where)
 
   if (!userWithPassword || !userWithPassword.hash) {
@@ -327,7 +321,7 @@ export async function resetUserPassword({
 }) {
   const hashedPassword = await getPasswordHash(password)
 
-  const user = await new UserRepository(db).findByUsername(username)
+  const user = await repositoryFactory.getUserRepository().findByUsername(username)
   if (!user)
     return null
 
@@ -347,8 +341,8 @@ export async function signupWithConnection({
   providerName: Connection['providerName']
   invitationId?: string
 }) {
-  return db.transaction().execute(async (tx) => {
-    const user = await new UserRepository(tx).create({
+  return repositoryFactory.transaction(async (tx) => {
+    const user = await tx.getUserRepository().create({
       id: uuidv7(),
       email: email.toLocaleLowerCase(),
       username,
@@ -357,7 +351,7 @@ export async function signupWithConnection({
       throw new Error('Failed to create user')
     }
 
-    const organization = await new OrganizationRepository(tx).create({
+    const organization = await tx.getOrganizationRepository().create({
       id: uuidv7(),
       shortId: shortId(6),
       name: username,
@@ -368,9 +362,7 @@ export async function signupWithConnection({
       throw new Error('Failed to create organization')
     }
 
-    const membershipRepository = new MembershipRepository(tx)
-
-    const membership = await membershipRepository.create({
+    const membership = await tx.getMembershipRepository().create({
       id: uuidv7(),
       organizationId: organization.id,
       userId: user.id,
@@ -381,10 +373,10 @@ export async function signupWithConnection({
     }
 
     if (invitationId) {
-      await membershipRepository.claim(user.id, invitationId)
+      await tx.getMembershipRepository().claim(user.id, invitationId)
     }
 
-    const session = await new SessionRepository(tx).create({
+    const session = await tx.getSessionRepository().create({
       id: uuidv7(),
       userId: user.id,
       expirationDate: getSessionExpirationDate(),
@@ -393,7 +385,7 @@ export async function signupWithConnection({
       throw new Error('Failed to create session')
     }
 
-    const connection = await new ConnectionRepository(tx).create({
+    const connection = await tx.getConnectionRepository().create({
       id: uuidv7(),
       providerId,
       providerName,

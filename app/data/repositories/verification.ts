@@ -1,4 +1,4 @@
-import type { Insertable, Kysely, Selectable, Updateable } from 'kysely'
+import type { Insertable, Kysely, Selectable, Transaction, Updateable } from 'kysely'
 import type { DB, Verification } from 'kysely-codegen'
 import type { VerificationTypes } from '~/routes/auth/verify'
 import type { twoFAVerifyVerificationType } from '~/utils/auth/verify.server'
@@ -14,8 +14,8 @@ export interface IVerificationRepository<T, E> {
 }
 
 export class VerificationRepository implements IVerificationRepository<Selectable<Verification>, Insertable<Verification>> {
-  private db: Kysely<DB>
-  constructor(db: Kysely<DB>) {
+  private db: Kysely<DB> | Transaction<DB>
+  constructor(db: Kysely<DB> | Transaction<DB>) {
     this.db = db
   }
 
