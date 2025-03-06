@@ -1,4 +1,5 @@
 /* eslint-disable antfu/no-top-level-await */
+/* eslint-disable no-console */
 import crypto from 'node:crypto'
 import process from 'node:process'
 import closeWithGrace from 'close-with-grace'
@@ -6,7 +7,6 @@ import compression from 'compression'
 import express from 'express'
 import rateLimit from 'express-rate-limit'
 import helmet from 'helmet'
-import { log } from './app/utils/logger.server.ts'
 
 // Short-circuit the type-checking of the built output.
 const BUILD_PATH = './build/server/index.js'
@@ -88,7 +88,7 @@ app.use(
 )
 
 if (DEVELOPMENT) {
-  log.info('Starting development server')
+  console.log('Starting development server')
   const viteDevServer = await import('vite').then(vite =>
     vite.createServer({
       server: { middlewareMode: true },
@@ -110,7 +110,7 @@ if (DEVELOPMENT) {
   })
 }
 else {
-  log.info('Starting production server')
+  console.log('Starting production server')
   app.use(
     '/assets',
     express.static('build/client/assets', { immutable: true, maxAge: '1y' }),
@@ -120,7 +120,7 @@ else {
 }
 
 const server = app.listen(PORT, () => {
-  log.info(`Server is running on http://localhost:${PORT}`)
+  console.log(`Server is running on http://localhost:${PORT}`)
 })
 
 closeWithGrace({
