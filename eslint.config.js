@@ -7,4 +7,5 @@ export default antfu({
       'react-refresh/only-export-components': 'off',
     },
   },
+  ignores: ['app/data/db.d.ts'],
 })
