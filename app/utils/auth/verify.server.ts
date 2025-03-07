@@ -1,7 +1,7 @@
 import type { Submission } from '@conform-to/react'
 import type { Insertable } from 'kysely'
-import type { Verification } from 'kysely-codegen'
 import type { z } from 'zod'
+import type { Verification } from '~/data/db.d'
 import type { VerificationTypes } from '~/routes/auth/verify'
 import { parseWithZod } from '@conform-to/zod'
 import { generateTOTP, verifyTOTP } from '@epic-web/totp'

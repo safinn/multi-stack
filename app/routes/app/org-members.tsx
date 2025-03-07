@@ -1,6 +1,6 @@
 import type { Selectable } from 'kysely'
-import type { Membership, Role, User } from 'kysely-codegen'
 import type { Route } from './+types/org-members'
+import type { Membership, Role, User } from '~/data/db.d'
 import process from 'node:process'
 import { getFormProps, getInputProps, useForm } from '@conform-to/react'
 import { getZodConstraint, parseWithZod } from '@conform-to/zod'

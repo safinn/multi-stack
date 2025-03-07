@@ -1,5 +1,5 @@
 import type { Kysely, Transaction } from 'kysely'
-import type { DB } from 'kysely-codegen'
+import type { DB } from '~/data/db.d'
 import { db } from './db'
 import { ConnectionRepository } from './repositories/connection'
 import { IdentityRespository } from './repositories/identity'

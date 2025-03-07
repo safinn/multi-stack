@@ -1,5 +1,5 @@
 import type { Insertable, Kysely, Selectable, Transaction, Updateable } from 'kysely'
-import type { DB, Verification } from 'kysely-codegen'
+import type { DB, Verification } from '~/data/db.d'
 import type { VerificationTypes } from '~/routes/auth/verify'
 import type { twoFAVerifyVerificationType } from '~/utils/auth/verify.server'
 

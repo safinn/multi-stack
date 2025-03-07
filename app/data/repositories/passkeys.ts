@@ -1,5 +1,5 @@
 import type { Insertable, Kysely, Selectable, Transaction } from 'kysely'
-import type { DB, Passkey } from 'kysely-codegen'
+import type { DB, Passkey } from '~/data/db.d'
 
 // T = the returned entity type
 // E = the entity type used for inserts

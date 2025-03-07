@@ -1,5 +1,5 @@
 import type { Kysely, Selectable, Transaction } from 'kysely'
-import type { DB, Role } from 'kysely-codegen'
+import type { DB, Role } from '~/data/db.d'
 
 // T = the returned entity type
 export interface IRoleRepository<T> {

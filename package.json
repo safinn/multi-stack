@@ -9,7 +9,7 @@
     "typecheck": "react-router typegen && pnpm migrate:gen && tsc -b",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "migrate:gen": "kysely-codegen --camel-case --dialect postgres --out-file './node_modules/kysely-codegen/dist/db.d.ts'",
+    "migrate:gen": "kysely-codegen --camel-case --dialect postgres --out-file './app/data/db.d.ts'",
     "migrate:latest": "kysely migrate latest && pnpm migrate:gen",
     "migrate:rollback": "kysely migrate rollback --all"
   },

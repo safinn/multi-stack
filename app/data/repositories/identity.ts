@@ -1,5 +1,5 @@
 import type { Kysely, Selectable, Transaction } from 'kysely'
-import type { DB, Membership, Organization, User } from 'kysely-codegen'
+import type { DB, Membership, Organization, User } from '~/data/db.d'
 import { jsonObjectFrom } from 'kysely/helpers/postgres'
 
 export interface UserPassword {

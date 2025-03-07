@@ -1,5 +1,5 @@
-import type { Connection, Password, User } from 'kysely-codegen'
 import type { ProviderUser } from '../providers/provider'
+import type { Connection, Password, User } from '~/data/db.d'
 import type { IdOrUsername } from '~/data/repositories/identity'
 import argon2 from '@node-rs/argon2'
 import { data, href, redirect } from 'react-router'

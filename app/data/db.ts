@@ -1,4 +1,4 @@
-import type { DB } from 'kysely-codegen'
+import type { DB } from '~/data/db.d'
 import process from 'node:process'
 import { CamelCasePlugin, Kysely, PostgresDialect } from 'kysely'
 import pg from 'pg'
