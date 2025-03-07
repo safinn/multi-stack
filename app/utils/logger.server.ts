@@ -1,17 +1,8 @@
-import type { NextFunction, Request, Response } from 'express'
 import process from 'node:process'
+import morgan from 'morgan'
 import pino from 'pino'
 import pinoHttp from 'pino-http'
-
-const startTime = Symbol('startTime')
-const reqObject = Symbol('reqObject')
-
-// Extend the Response interface to include our custom properties
-interface ExtendedResponse extends Response {
-  [startTime]: number
-  [reqObject]: Request
-  err?: Error
-}
+import colors, { cyan } from 'yoctocolors'
 
 const { NODE_ENV } = process.env
 const isDev = NODE_ENV === 'development'
@@ -27,42 +18,34 @@ export function httpLogger() {
     })
   }
 
-  const onResFinished = (res: ExtendedResponse, err?: Error) => {
-    const req = res[reqObject]
+  morgan.token('statusColor', (req, res) => {
+    function headerSent(res) {
+      return typeof res.headersSent !== 'boolean'
+        ? Boolean(res._header)
+        : res.headersSent
+    }
+    // get the status code if response written
+    const status = headerSent(res)
+      ? res.statusCode
+      : undefined
 
-    const elapsedTime = Date.now() - res[startTime]
-    const message = `${res.statusCode} ${req.method} ${req.url} - ${elapsedTime}ms`
-
-    if (err || res.err || res.statusCode >= 500) {
-      log.error(err || res.err, message)
-      return
+    if (!status) {
+      return colors.white('-')
     }
 
-    if (res.statusCode >= 400) {
-      log.warn(message)
-      return
-    }
+    // get status color
+    const statusColor = status >= 500
+      ? colors.red
+      : status >= 400
+        ? colors.yellow
+        : status >= 300
+          ? colors.magenta
+          : status >= 200
+            ? colors.green
+            : colors.white
 
-    log.info(message)
-  }
+    return colors.bold(statusColor(status?.toString()))
+  })
 
-  return (req: Request, res: Response, next: NextFunction) => {
-    const extRes = res as ExtendedResponse
-
-    const onResponseComplete = (err?: Error) => {
-      extRes.removeListener('close', onResponseComplete)
-      extRes.removeListener('finish', onResponseComplete)
-      extRes.removeListener('error', onResponseComplete)
-      return onResFinished(extRes, err)
-    }
-
-    extRes[startTime] = Date.now()
-    extRes[reqObject] = req
-
-    extRes.on('finish', onResponseComplete)
-    extRes.on('close', onResponseComplete)
-    extRes.on('error', onResponseComplete)
-
-    next()
-  }
+  return morgan(`:statusColor ${cyan(`${colors.bold(':method')} :url :res[content-length] - :response-time ms`)}`)
 }

@@ -48,6 +48,7 @@
     "isbot": "^5.1.23",
     "kysely": "^0.27.5",
     "lucide-react": "^0.477.0",
+    "morgan": "^1.10.0",
     "nanoid": "^5.1.2",
     "next-themes": "^0.4.4",
     "pg": "^8.13.3",
@@ -65,6 +66,7 @@
     "tailwind-merge": "^3.0.2",
     "tailwindcss-animate": "^1.0.7",
     "uuidv7": "^1.0.2",
+    "yoctocolors": "^2.1.1",
     "zod": "^3.24.2"
   },
   "devDependencies": {
