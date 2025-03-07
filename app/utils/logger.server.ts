@@ -19,19 +19,7 @@ export function httpLogger() {
   }
 
   morgan.token('statusColor', (req, res) => {
-    function headerSent(res) {
-      return typeof res.headersSent !== 'boolean'
-        ? Boolean(res._header)
-        : res.headersSent
-    }
-    // get the status code if response written
-    const status = headerSent(res)
-      ? res.statusCode
-      : undefined
-
-    if (!status) {
-      return colors.white('-')
-    }
+    const status = res.statusCode
 
     // get status color
     const statusColor = status >= 500
