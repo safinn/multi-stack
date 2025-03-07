@@ -6,10 +6,11 @@
     "build": "react-router build",
     "dev": "cross-env NODE_ENV=development node server.js | pino-pretty",
     "start": "node server.js",
-    "typecheck": "react-router typegen && tsc -b",
+    "typecheck": "react-router typegen && pnpm migrate:gen && tsc -b",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "migrate:latest": "kysely migrate latest && kysely-codegen --camel-case --dialect postgres --out-file './node_modules/kysely-codegen/dist/db.d.ts'",
+    "migrate:gen": "kysely-codegen --camel-case --dialect postgres --out-file './node_modules/kysely-codegen/dist/db.d.ts'",
+    "migrate:latest": "kysely migrate latest && pnpm migrate:gen",
     "migrate:rollback": "kysely migrate rollback --all"
   },
   "dependencies": {
