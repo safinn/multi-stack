@@ -13,5 +13,6 @@
     { "path": "./tsconfig.node.json" },
     { "path": "./tsconfig.vite.json" }
   ],
-  "files": []
+  "files": [],
+  "exclude": ["~/data/db.d.ts"]
 }

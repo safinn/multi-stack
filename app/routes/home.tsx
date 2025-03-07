@@ -31,25 +31,25 @@ export default function Home() {
 
       {/* no user */}
       {!rootData?.user
-      && (
-        <ul>
-          <li>
-            <ArrowLink to="/login">Log in</ArrowLink>
-          </li>
-          <li>
-            <ArrowLink to="/signup">Sign up</ArrowLink>
-          </li>
-        </ul>
-      )}
+        && (
+          <ul>
+            <li>
+              <ArrowLink to="/login">Log in</ArrowLink>
+            </li>
+            <li>
+              <ArrowLink to="/signup">Sign up</ArrowLink>
+            </li>
+          </ul>
+        )}
 
       {rootData?.user
-      && (
-        <ul>
-          <li>
-            <ArrowLink to="/app">Dashboard</ArrowLink>
-          </li>
-        </ul>
-      )}
+        && (
+          <ul>
+            <li>
+              <ArrowLink to="/app">Dashboard</ArrowLink>
+            </li>
+          </ul>
+        )}
 
       <ul className="list-disc space-y-3">
         <li>

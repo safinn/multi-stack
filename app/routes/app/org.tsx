@@ -104,24 +104,24 @@ export default function Org({ loaderData, actionData }: Route.ComponentProps) {
         </StatusButton>
       </Form>
       {!loaderData.organization.personalOrganizationUserId
-      && (
-        <Form method="DELETE">
-          <StatusButton
-            {...dc.getButtonProps({
-              type: 'submit',
-              name: 'intent',
-              value: 'delete',
-            })}
-            variant="destructive"
-            status={isDeletePending ? 'pending' : ((lastIntent === 'delete' && form.status) || 'idle')}
-            disabled={isDeletePending}
-          >
-            {dc.doubleCheck
-              ? `Are you sure?`
-              : `Delete Organization`}
-          </StatusButton>
-        </Form>
-      )}
+        && (
+          <Form method="DELETE">
+            <StatusButton
+              {...dc.getButtonProps({
+                type: 'submit',
+                name: 'intent',
+                value: 'delete',
+              })}
+              variant="destructive"
+              status={isDeletePending ? 'pending' : ((lastIntent === 'delete' && form.status) || 'idle')}
+              disabled={isDeletePending}
+            >
+              {dc.doubleCheck
+                ? `Are you sure?`
+                : `Delete Organization`}
+            </StatusButton>
+          </Form>
+        )}
     </div>
   )
 }
