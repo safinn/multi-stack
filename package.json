@@ -6,7 +6,7 @@
     "build": "react-router build",
     "dev": "cross-env NODE_ENV=development node server.js | pino-pretty",
     "start": "node server.js",
-    "typecheck": "react-router typegen && pnpm migrate:gen && tsc -b",
+    "typecheck": "react-router typegen && tsc -b",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "migrate:gen": "kysely-codegen --camel-case --dialect postgres --out-file './app/data/db.d.ts'",
