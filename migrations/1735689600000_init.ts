@@ -1,7 +1,7 @@
 import type { Kysely } from 'kysely'
 import { sql } from 'kysely'
 import { uuidv7 } from 'uuidv7'
-import { withSoftDeletes, withTimestamps } from '../app/data/utils'
+import { withSoftDeletes, withTimestamps } from './utils.js'
 
 export async function up(db: Kysely<any>): Promise<void> {
   // users
