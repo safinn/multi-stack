@@ -36,5 +36,7 @@ ENV NODE_ENV=production
 COPY ./package.json pnpm-lock.yaml server.js /app/
 COPY --from=production-dependencies-env /app/node_modules /app/node_modules
 COPY --from=build-env /app/build /app/build
+COPY migrations /app/migrations
 WORKDIR /app
-CMD ["npm", "run", "start"]
+ENTRYPOINT ["npm", "run"]
+CMD ["start"]
