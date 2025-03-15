@@ -18,6 +18,7 @@ import { Toaster } from './components/ui/sonner'
 import { useTheme } from './routes/resources/theme-switch'
 import { getUserMemberships, getUserOrganizationMembership } from './utils/auth/auth.server'
 import { ClientHintCheck, getHints } from './utils/client-hints'
+import { getEnv } from './utils/env.server'
 import { honeypot } from './utils/honeypot.server'
 import { getDomainUrl } from './utils/misc'
 import { useNonce } from './utils/NonceProvider'
@@ -58,6 +59,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         theme: getTheme(request),
       },
     },
+    ENV: getEnv(),
     toast,
     honeypotInputProps,
   }, {

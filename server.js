@@ -1,12 +1,10 @@
 /* eslint-disable antfu/no-top-level-await */
 /* eslint-disable no-console */
-import crypto from 'node:crypto'
 import process from 'node:process'
 import closeWithGrace from 'close-with-grace'
 import compression from 'compression'
 import express from 'express'
 import rateLimit from 'express-rate-limit'
-import helmet from 'helmet'
 
 // Short-circuit the type-checking of the built output.
 const BUILD_PATH = './build/server/index.js'
@@ -62,30 +60,6 @@ app.use((req, res, next) => {
 })
 
 app.use(compression())
-
-// nonce generation
-app.use((_, res, next) => {
-  res.locals.cspNonce = crypto.randomBytes(16).toString('hex')
-  next()
-})
-
-app.use(
-  helmet({
-    xPoweredBy: false,
-    contentSecurityPolicy: {
-      directives: {
-        'script-src': [
-          '\'self\'',
-          (req, res) => `'nonce-${res.locals.cspNonce}'`,
-        ],
-        'connect-src': [
-          DEVELOPMENT ? 'ws:' : '',
-          '\'self\'',
-        ],
-      },
-    },
-  }),
-)
 
 if (DEVELOPMENT) {
   console.log('Starting development server')

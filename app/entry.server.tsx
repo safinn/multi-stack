@@ -1,7 +1,9 @@
 import type { RenderToPipeableStreamOptions } from 'react-dom/server'
-
-import type { AppLoadContext, EntryContext } from 'react-router'
+import type { EntryContext } from 'react-router'
+import crypto from 'node:crypto'
+import process from 'node:process'
 import { PassThrough } from 'node:stream'
+import { contentSecurity } from '@nichtsam/helmet/content'
 import { createReadableStreamFromReadable } from '@react-router/node'
 import { isbot } from 'isbot'
 import { renderToPipeableStream } from 'react-dom/server'
@@ -14,18 +16,19 @@ export const streamTimeout = 5_000
 
 init()
 
+const MODE = process.env.NODE_ENV ?? 'development'
+
 export default function handleRequest(
   request: Request,
   responseStatusCode: number,
   responseHeaders: Headers,
   routerContext: EntryContext,
-  loadContext: AppLoadContext,
 ) {
   return new Promise((resolve, reject) => {
     let shellRendered = false
     const userAgent = request.headers.get('user-agent')
 
-    const nonce = String(loadContext.cspNonce) ?? undefined
+    const nonce = crypto.randomBytes(16).toString('hex')
 
     // Ensure requests from bots and SPA Mode renders wait for all content to load before responding
     // https://react.dev/reference/react-dom/server/renderToPipeableStream#waiting-for-all-content-to-load-for-crawlers-and-static-generation
@@ -45,6 +48,25 @@ export default function handleRequest(
           const stream = createReadableStreamFromReadable(body)
 
           responseHeaders.set('Content-Type', 'text/html')
+
+          contentSecurity(responseHeaders, {
+            crossOriginEmbedderPolicy: false,
+            contentSecurityPolicy: {
+              directives: {
+                fetch: {
+                  'script-src': [
+                    '\'self\'',
+                    `\'nonce-${nonce}\'`,
+                  ],
+                  'connect-src': [
+                    MODE === 'development' ? 'ws:' : '',
+                    '\'self\'',
+                  ],
+                },
+              },
+            },
+
+          })
 
           resolve(
             new Response(stream, {
