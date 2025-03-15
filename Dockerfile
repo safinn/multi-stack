@@ -1,6 +1,6 @@
 ARG NODE_VERSION=22.14.0
 FROM node:${NODE_VERSION}-alpine AS build
-ARG PNPM_VERSION=10.6.0
+ARG PNPM_VERSION=10.6.3
 RUN npm install -g pnpm@$PNPM_VERSION
 
 # installs all dependencies, including devDependencies
@@ -21,6 +21,10 @@ RUN pnpm install --frozen-lockfile --prod=true
 # copy node_modules including development dependencies
 # build the app
 FROM build AS build-env
+
+ARG COMMIT_SHA
+ENV COMMIT_SHA=$COMMIT_SHA
+
 COPY . /app/
 COPY --from=development-dependencies-env /app/node_modules /app/node_modules
 WORKDIR /app
