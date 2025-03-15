@@ -1,10 +1,11 @@
 import type { RenderToPipeableStreamOptions } from 'react-dom/server'
-import type { EntryContext } from 'react-router'
+import type { ActionFunctionArgs, EntryContext, LoaderFunctionArgs } from 'react-router'
 import crypto from 'node:crypto'
 import process from 'node:process'
 import { PassThrough } from 'node:stream'
 import { contentSecurity } from '@nichtsam/helmet/content'
 import { createReadableStreamFromReadable } from '@react-router/node'
+import * as Sentry from '@sentry/node'
 import { isbot } from 'isbot'
 import { renderToPipeableStream } from 'react-dom/server'
 import { ServerRouter } from 'react-router'
@@ -27,6 +28,10 @@ export default function handleRequest(
   return new Promise((resolve, reject) => {
     let shellRendered = false
     const userAgent = request.headers.get('user-agent')
+
+    if (process.env.NODE_ENV === 'production' && process.env.SENTRY_DSN) {
+      responseHeaders.append('Document-Policy', 'js-profiling')
+    }
 
     const nonce = crypto.randomBytes(16).toString('hex')
 
@@ -60,6 +65,7 @@ export default function handleRequest(
                   ],
                   'connect-src': [
                     MODE === 'development' ? 'ws:' : '',
+                    process.env.SENTRY_DSN ? '*.sentry.io' : undefined,
                     '\'self\'',
                   ],
                 },
@@ -97,4 +103,11 @@ export default function handleRequest(
     // flush down the rejected boundaries
     setTimeout(abort, streamTimeout + 1000)
   })
+}
+
+export function handleError(error: unknown, { request }: LoaderFunctionArgs | ActionFunctionArgs) {
+  if (!request.signal.aborted) {
+    Sentry.captureException(error)
+    log.error(error, 'Error in action or loader')
+  }
 }

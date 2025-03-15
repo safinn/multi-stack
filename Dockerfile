@@ -24,7 +24,15 @@ FROM build AS build-env
 COPY . /app/
 COPY --from=development-dependencies-env /app/node_modules /app/node_modules
 WORKDIR /app
-RUN pnpm run build
+
+# Use the following environment variables to configure Sentry
+# ENV SENTRY_ORG=
+# ENV SENTRY_PROJECT=
+
+# Mount the secret and set it as an environment variable and run the build
+RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN \
+  export SENTRY_AUTH_TOKEN=$(cat /run/secrets/SENTRY_AUTH_TOKEN) && \
+  pnpm run build
 
 # copy the package.json, pnpm-lock.yaml and server.js files
 # copy the production node_module dependencies
