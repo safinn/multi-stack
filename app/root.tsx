@@ -9,6 +9,7 @@ import {
   Scripts,
   ScrollRestoration,
   useLocation,
+  useRouteLoaderData,
 } from 'react-router'
 import { HoneypotProvider } from 'remix-utils/honeypot/react'
 import stylesheet from './app.css?url'
@@ -71,6 +72,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 export function Layout({ children }: { children: React.ReactNode }) {
   const nonce = useNonce()
   const theme = useTheme()
+  const rootData = useRouteLoaderData<typeof loader>('root')
 
   return (
     <html lang="en" className={`${theme}`}>
@@ -83,6 +85,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         {children}
+        <script
+          nonce={nonce}
+          // eslint-disable-next-line react-dom/no-dangerously-set-innerhtml
+          dangerouslySetInnerHTML={{
+            __html: `window.ENV = ${JSON.stringify(rootData?.ENV)}`,
+          }}
+        />
         <ScrollRestoration nonce={nonce} />
         <Scripts nonce={nonce} />
         <Toaster />
