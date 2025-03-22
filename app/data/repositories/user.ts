@@ -12,12 +12,21 @@ export interface IUserRepository<T, E, U> {
   findById: (id: string) => Promise<T | undefined>
   patch: (id: string, user: U) => Promise<T | undefined>
   delete: (id: string) => Promise<void>
+  countAll: () => Promise<number | undefined>
 }
 
 export class UserRepository implements IUserRepository<Selectable<User>, Insertable<User>, Updateable<User>> {
   private db: Kysely<DB> | Transaction<DB>
   constructor(db: Kysely<DB> | Transaction<DB>) {
     this.db = db
+  }
+
+  async countAll(): Promise<number | undefined> {
+    const r = await this.db.selectFrom('user')
+      .select(({ fn }) => [fn.count<number>('id').as('userCount')])
+      .executeTakeFirst()
+
+    return r?.userCount
   }
 
   async delete(id: string): Promise<void> {

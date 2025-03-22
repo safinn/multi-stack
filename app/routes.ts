@@ -49,6 +49,7 @@ export default [
   // resources
   ...prefix('resources', [
     route('theme-switch', 'routes/resources/theme-switch.tsx'),
+    route('healthcheck', 'routes/resources/healthcheck.ts'),
   ]),
 
   route('*', 'routes/catch-all.tsx'),

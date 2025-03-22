@@ -108,6 +108,6 @@ export default function handleRequest(
 export function handleError(error: unknown, { request }: LoaderFunctionArgs | ActionFunctionArgs) {
   if (!request.signal.aborted) {
     Sentry.captureException(error)
-    log.error(error, 'Error in action or loader')
+    log.error(error, 'error in action or loader')
   }
 }

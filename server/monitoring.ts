@@ -21,5 +21,14 @@ export function init() {
       Sentry.httpIntegration(),
       nodeProfilingIntegration(),
     ],
+    beforeSendTransaction(event) {
+      // ignore all healthcheck related transactions
+      // note that name of header here is case-sensitive
+      if (event.request?.headers?.['x-healthcheck'] === 'true') {
+        return null
+      }
+
+      return event
+    },
   })
 }
