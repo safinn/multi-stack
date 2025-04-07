@@ -1,6 +1,6 @@
 ARG NODE_VERSION=22.14.0
 FROM node:${NODE_VERSION}-alpine AS build
-ARG PNPM_VERSION=10.6.5
+ARG PNPM_VERSION=10.8.0
 RUN npm install -g pnpm@$PNPM_VERSION
 
 # installs all dependencies, including devDependencies
