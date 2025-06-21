@@ -5,12 +5,12 @@ import {
   verifyRegistrationResponse,
 } from '@simplewebauthn/server'
 import { repositoryFactory } from '~/data/factory'
-import { requireUserInOrganization } from '~/utils/auth/auth.server'
+import { requireUser } from '~/utils/auth/auth.server'
 import { getDomainUrl, getErrorMessage } from '~/utils/misc'
 import { getWebAuthnConfig, passkeyCookie, PasskeyCookieSchema, RegistrationResponseSchema } from './utils.server'
 
-export async function loader({ request, params }: Route.LoaderArgs) {
-  const { user } = await requireUserInOrganization(request, params.organizationId)
+export async function loader({ request }: Route.LoaderArgs) {
+  const user = await requireUser(request)
   const passkeys = await repositoryFactory.getPasskeyRepository().findByUserId(user.id)
 
   const config = getWebAuthnConfig(request)
@@ -43,9 +43,9 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   )
 }
 
-export async function action({ request, params }: Route.ActionArgs) {
+export async function action({ request }: Route.ActionArgs) {
   try {
-    const { user } = await requireUserInOrganization(request, params.organizationId)
+    const user = await requireUser(request)
     const body = await request.json()
     const result = RegistrationResponseSchema.safeParse(body)
     if (!result.success) {

@@ -1,4 +1,4 @@
-import type { Info, Route } from './+types/connections'
+import type { Route } from './+types/connections'
 import type { ProviderName } from '~/utils/connections'
 import { invariantResponse } from '@epic-web/invariant'
 import { useState } from 'react'
@@ -29,16 +29,18 @@ async function userCanDeleteConnections(userId: string) {
   return Boolean(connections && connections > 1)
 }
 
+interface ConnectionData {
+  providerName: ProviderName
+  id: string
+  displayName: string
+  link?: string | null
+  createdAtFormatted: string
+}
+
 export async function loader({ request, params }: Route.LoaderArgs) {
   const { user } = await requireUserInOrganization(request, params.organizationId)
   const rawConnections = await repositoryFactory.getConnectionRepository().findByUserId(user.id)
-  const connections: Array<{
-    providerName: ProviderName
-    id: string
-    displayName: string
-    link?: string | null
-    createdAtFormatted: string
-  }> = []
+  const connections: Array<ConnectionData> = []
   for (const connection of rawConnections) {
     const r = ProviderNameSchema.safeParse(connection.providerName)
     if (!r.success)
@@ -131,7 +133,7 @@ function Connection({
   connection,
   canDelete,
 }: {
-  connection: Info['loaderData']['connections'][number]
+  connection: ConnectionData
   canDelete: boolean
 }) {
   const deleteFetcher = useFetcher<typeof action>()
