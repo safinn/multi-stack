@@ -5,9 +5,9 @@ import { requireUser, requireUserInOrganization } from './auth/auth.server'
 type Action = 'create' | 'read' | 'update' | 'delete'
 type Entity = 'user' | 'organization'
 type Access = 'own' | 'any' | 'own,any' | 'any,own'
-export type PermissionString =
-  | `${Action}:${Entity}`
-  | `${Action}:${Entity}:${Access}`
+export type PermissionString
+  = | `${Action}:${Entity}`
+    | `${Action}:${Entity}:${Access}`
 
 export function parsePermissionString(permissionString: PermissionString) {
   const [action, entity, access] = permissionString.split(':') as [

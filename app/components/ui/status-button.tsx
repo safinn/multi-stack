@@ -7,8 +7,8 @@ import { Button } from './button'
 import { Icon } from './icon'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip'
 
-export function StatusButton({ ref, message, status, className, children, spinDelay, ...props }: React.ComponentProps<'button'> &
-  VariantProps<typeof buttonVariants> & {
+export function StatusButton({ ref, message, status, className, children, spinDelay, ...props }: React.ComponentProps<'button'>
+  & VariantProps<typeof buttonVariants> & {
     asChild?: boolean
   } & {
     status: 'pending' | 'success' | 'error' | 'idle'
